@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0b36d0f7-322c-450d-a111-6e3ba060b481" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="702191d1-b7f0-48f0-a4d3-6f61c7fca730" >
+		<file:connection workingDir="/home/sairaghav/AnypointStudio/studio-workspace/mule/input/" />
+	</file:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="818cd773-d805-4016-8e67-e5673307f61a" >
+		<file:connection workingDir="/home/sairaghav/AnypointStudio/studio-workspace/mule/output/" />
+	</file:config>
+	<flow name="day2-assignmentFlow" doc:id="651e839c-17f0-4a1e-9352-4ad8c8d3a6c2" >
+		<http:listener doc:name="Listener" doc:id="69968dbb-f6b0-4561-94b3-c5cb77f6ec86" path="/xml/filter" config-ref="HTTP_Listener_config"/>
+		<file:read doc:name="Read" doc:id="3157bd7b-7c25-45d6-bdfa-e62c4434a823" config-ref="File_Config" path="/home/sairaghav/AnypointStudio/studio-workspace/mule/input/Source.csv"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7fa43f43-780b-4065-90eb-60450dbdb7ad" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="5bcb6d8f-419b-4aef-824b-af8718f20932">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="dd6829e6-1c74-4e66-8f0c-658b8eb60b60" collection="#[payload]">
+			<choice doc:name="Choice" doc:id="57186957-953c-4e61-9131-af3093c4deec">
+			<when expression='#[payload.Course == "Computer Science"]'>
+					<logger level="INFO" doc:name="Logger" doc:id="827de651-46cc-4927-8d03-19b9707a661c" message="#[payload]"/>
+					<file:write doc:name="Write" doc:id="20932afe-6396-41e8-accc-8cde3422af39" config-ref="File_Config1" path="/home/sairaghav/AnypointStudio/studio-workspace/mule/output/CSE.json" mode="APPEND"/>
+				</when>
+				<when expression='#[payload.Course == "IT"]'>
+					<logger level="INFO" doc:name="Logger" doc:id="e29b8b7e-57f6-4cb3-8748-f808160193df" message="#[payload]"/>
+					<file:write doc:name="Write" doc:id="1703f074-66ea-4c68-9a3f-ba15dcd1a1a8" config-ref="File_Config1" path="/home/sairaghav/AnypointStudio/studio-workspace/mule/output/IT.json"/>
+				</when>
+		</choice>
+		</foreach>
+	</flow>
+</mule>
